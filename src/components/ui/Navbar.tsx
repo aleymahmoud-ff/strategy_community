@@ -17,6 +17,11 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: "", new: "", confirm: "" });
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,6 +64,53 @@ export default function Navbar() {
     } catch {
       // Handle error
     }
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError("");
+    if (passwordForm.new !== passwordForm.confirm) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+    if (passwordForm.new.length < 6) {
+      setPasswordError("New password must be at least 6 characters");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.new,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPasswordError(data.error || "Failed to change password");
+      } else {
+        setPasswordSuccess(true);
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordForm({ current: "", new: "", confirm: "" });
+          setPasswordSuccess(false);
+        }, 1500);
+      }
+    } catch {
+      setPasswordError("An error occurred");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const openPasswordModal = () => {
+    setShowDropdown(false);
+    setMobileMenuOpen(false);
+    setPasswordForm({ current: "", new: "", confirm: "" });
+    setPasswordError("");
+    setPasswordSuccess(false);
+    setShowPasswordModal(true);
   };
 
   const isActive = (path: string) => {
@@ -144,6 +196,15 @@ export default function Navbar() {
                       </span>
                     </div>
                     <button
+                      onClick={openPasswordModal}
+                      className="w-full px-4 py-2.5 text-left text-sm text-[#2d3e50] hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                      </svg>
+                      Change Password
+                    </button>
+                    <button
                       onClick={handleLogout}
                       className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                     >
@@ -216,13 +277,90 @@ export default function Navbar() {
                   </span>
                 </div>
                 <button
+                  onClick={openPasswordModal}
+                  className="w-full mt-2 px-4 py-3 text-left text-sm text-[#2d3e50] hover:bg-gray-50 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                  Change Password
+                </button>
+                <button
                   onClick={handleLogout}
-                  className="w-full mt-2 px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Change Password Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPasswordModal(false)} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-[#2d3e50]">Change Password</h2>
+              <button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {passwordSuccess ? (
+              <div className="text-center py-6">
+                <svg className="w-12 h-12 mx-auto text-green-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-green-600 font-medium">Password changed successfully!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.current}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d4a537]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.new}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d4a537]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.confirm}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                    onKeyDown={(e) => e.key === "Enter" && handleChangePassword()}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#d4a537]"
+                  />
+                </div>
+
+                {passwordError && (
+                  <p className="text-sm text-red-600">{passwordError}</p>
+                )}
+
+                <button
+                  onClick={handleChangePassword}
+                  disabled={passwordLoading}
+                  className="w-full py-2.5 bg-[#2d3e50] text-white rounded-lg text-sm font-medium hover:bg-[#3d5068] transition-colors disabled:opacity-50"
+                >
+                  {passwordLoading ? "Changing..." : "Change Password"}
                 </button>
               </div>
             )}
