@@ -101,6 +101,7 @@ export default function NewMemberPage() {
       contact: formData.get("contact") as string || null,
       memberType: formData.get("memberType") as string || null,
       guestStatus: formData.get("guestStatus") as string || null,
+      linkedin: formData.get("linkedin") as string || null,
       photo: photoBase64,
     };
 
@@ -352,6 +353,10 @@ export default function NewMemberPage() {
                 <div>
                   <label htmlFor="company" className={labelClass}>Company</label>
                   <input type="text" id="company" name="company" className={inputClass} placeholder="Company name" />
+                </div>
+                <div className="md:col-span-2">
+                  <label htmlFor="linkedin" className={labelClass}>LinkedIn Profile</label>
+                  <input type="url" id="linkedin" name="linkedin" className={inputClass} placeholder="https://www.linkedin.com/in/username" />
                 </div>
                 <div>
                   <label htmlFor="memberType" className={labelClass}>Type</label>

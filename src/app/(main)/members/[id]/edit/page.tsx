@@ -60,6 +60,7 @@ interface Member {
   contact: string | null;
   memberType: string | null;
   guestStatus: string | null;
+  linkedin: string | null;
   photo: string | null;
 }
 
@@ -148,6 +149,7 @@ export default function EditMemberPage({
       contact: formData.get("contact") as string || null,
       memberType: formData.get("memberType") as string || null,
       guestStatus: formData.get("guestStatus") as string || null,
+      linkedin: formData.get("linkedin") as string || null,
       photo: photoBase64,
     };
 
@@ -371,6 +373,20 @@ export default function EditMemberPage({
                 id="company"
                 name="company"
                 defaultValue={member.company || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1">
+                LinkedIn Profile
+              </label>
+              <input
+                type="url"
+                id="linkedin"
+                name="linkedin"
+                defaultValue={member.linkedin || ""}
+                placeholder="https://www.linkedin.com/in/username"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
