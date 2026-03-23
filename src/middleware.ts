@@ -4,6 +4,9 @@ import type { NextRequest } from 'next/server';
 // Routes that don't require authentication
 const publicRoutes = ['/login', '/forgot-password', '/directory'];
 
+// API routes that don't require authentication
+const publicApiRoutes = ['/api/auth/login', '/api/auth/logout'];
+
 // Routes that require admin role
 const adminRoutes = ['/admin'];
 
@@ -14,11 +17,18 @@ export function middleware(request: NextRequest) {
   // Check if the route is public
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
-  // Check if it's an API route (handled separately)
+  // Check if it's an API route
   const isApiRoute = pathname.startsWith('/api');
 
-  // Allow API routes to handle their own auth
+  // Protect API routes (except public ones)
   if (isApiRoute) {
+    const isPublicApi = publicApiRoutes.some(route => pathname.startsWith(route));
+    if (isPublicApi) {
+      return NextResponse.next();
+    }
+    if (!sessionToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.next();
   }
 
