@@ -158,6 +158,9 @@ export default function Navbar() {
             <Link href="/layouts" className={linkClass("/layouts")}>
               Layouts
             </Link>
+            <Link href="/analytics" className={linkClass("/analytics")}>
+              Analytics
+            </Link>
             {user?.role === "ADMIN" && (
               <Link href="/admin/users" className={linkClass("/admin")}>
                 Users
@@ -260,6 +263,9 @@ export default function Navbar() {
             </Link>
             <Link href="/layouts" className={mobileLinkClass("/layouts")}>
               Layouts
+            </Link>
+            <Link href="/analytics" className={mobileLinkClass("/analytics")}>
+              Analytics
             </Link>
             {user?.role === "ADMIN" && (
               <Link href="/admin/users" className={mobileLinkClass("/admin")}>
