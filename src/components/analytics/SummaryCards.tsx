@@ -6,8 +6,9 @@ interface SummaryData {
   activeMembers: number;
   activePct: number;
   avgAttendanceRate: number;
-  conversionRate: number;
   newMembers90d: number;
+  avgResponseRate: number;
+  avgReliabilityRate: number;
 }
 
 interface SummaryCardsProps {
@@ -64,19 +65,29 @@ export default function SummaryCards({ data }: SummaryCardsProps) {
       ),
     },
     {
-      label: 'Conversion Rate',
-      value: `${data.conversionRate.toFixed(1)}%`,
-      iconBg: 'bg-gradient-to-br from-[#f59e0b] to-[#d97706]',
+      label: 'Response Rate',
+      value: `${data.avgResponseRate.toFixed(1)}%`,
+      iconBg: 'bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8]',
       icon: (
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Reliability',
+      value: `${data.avgReliabilityRate.toFixed(1)}%`,
+      iconBg: 'bg-gradient-to-br from-[#8b5cf6] to-[#7c3aed]',
+      icon: (
+        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
     },
     {
       label: 'New Members (90d)',
       value: data.newMembers90d.toLocaleString(),
-      iconBg: 'bg-gradient-to-br from-[#8b5cf6] to-[#7c3aed]',
+      iconBg: 'bg-gradient-to-br from-[#f59e0b] to-[#d97706]',
       icon: (
         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -86,7 +97,7 @@ export default function SummaryCards({ data }: SummaryCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
       {cards.map((card) => (
         <div
           key={card.label}

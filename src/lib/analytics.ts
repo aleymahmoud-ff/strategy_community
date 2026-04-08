@@ -1,12 +1,20 @@
 import prisma from "@/lib/prisma";
 
+function pct1(numerator: number, denominator: number): number {
+  return Math.round((numerator / denominator) * 100 * 10) / 10;
+}
+
+export function abbreviateEventName(name: string): string {
+  return name.replace("Meetup ", "M").replace("Ramadan Gathering ", "R");
+}
+
 export async function getSummaryStats() {
   const [totalMembers, totalEvents, allAttendees, recentMembers] =
     await Promise.all([
       prisma.member.count(),
       prisma.event.count(),
       prisma.eventAttendee.findMany({
-        select: { status: true, memberId: true, eventId: true },
+        select: { status: true, memberId: true, eventId: true, calendarResponse: true, confirmed: true, attended: true },
       }),
       prisma.member.count({
         where: {
@@ -38,20 +46,30 @@ export async function getSummaryStats() {
     (a) => a.status === "ATTENDED"
   ).length;
 
+  const totalResponded = allAttendees.filter((a) => a.calendarResponse).length;
+  const avgResponseRate = totalInvited > 0
+    ? pct1(totalResponded, totalInvited)
+    : 0;
+
+  const withConfirmation = allAttendees.filter((a) => a.confirmed !== null);
+  const reliableCount = withConfirmation.filter((a) => {
+    if (a.confirmed === true && a.attended === true) return true;
+    if (a.confirmed === false && a.attended === false) return true;
+    return false;
+  }).length;
+  const avgReliabilityRate = withConfirmation.length > 0
+    ? pct1(reliableCount, withConfirmation.length)
+    : 0;
+
   return {
     totalMembers,
     totalEvents,
     activeMembers,
-    activePct: totalMembers > 0 ? Math.round((activeMembers / totalMembers) * 100 * 10) / 10 : 0,
-    avgAttendanceRate:
-      totalInvited > 0
-        ? Math.round((totalAttended / totalInvited) * 100 * 10) / 10
-        : 0,
-    conversionRate:
-      totalInvited > 0
-        ? Math.round((totalAttended / totalInvited) * 100 * 10) / 10
-        : 0,
+    activePct: totalMembers > 0 ? pct1(activeMembers, totalMembers) : 0,
+    avgAttendanceRate: totalInvited > 0 ? pct1(totalAttended, totalInvited) : 0,
     newMembers90d: recentMembers,
+    avgResponseRate,
+    avgReliabilityRate,
   };
 }
 
@@ -63,7 +81,13 @@ export async function getEventAnalytics() {
       name: true,
       date: true,
       attendees: {
-        select: { status: true, memberId: true },
+        select: {
+          status: true,
+          memberId: true,
+          calendarResponse: true,
+          confirmed: true,
+          attended: true,
+        },
       },
     },
   });
@@ -94,6 +118,23 @@ export async function getEventAnalytics() {
     const attendanceRate =
       invited > 0 ? Math.round((attended / invited) * 100) : 0;
 
+    // New metrics using boolean fields
+    const respondedCount = event.attendees.filter((a) => a.calendarResponse).length;
+    const responseRate = invited > 0 ? pct1(respondedCount, invited) : 0;
+
+    const attendeesWithConfirmation = event.attendees.filter((a) => a.confirmed !== null);
+    const reliableCount = attendeesWithConfirmation.filter((a) => {
+      if (a.confirmed === true && a.attended === true) return true;
+      if (a.confirmed === false && a.attended === false) return true;
+      return false;
+    }).length;
+    const reliabilityRate = attendeesWithConfirmation.length > 0
+      ? pct1(reliableCount, attendeesWithConfirmation.length)
+      : 0;
+
+    const actualAttendedCount = event.attendees.filter((a) => a.attended).length;
+    const actualAttendanceRate = invited > 0 ? pct1(actualAttendedCount, invited) : 0;
+
     return {
       name: event.name,
       date: event.date.toISOString().split("T")[0],
@@ -105,6 +146,10 @@ export async function getEventAnalytics() {
       firstTimers,
       noShowRate,
       attendanceRate,
+      responseRate,
+      reliabilityRate,
+      actualAttendanceRate,
+      respondedCount,
     };
   });
 }
@@ -292,7 +337,7 @@ export async function getHealthMetrics() {
   });
 
   const dropped = members.filter((m) => m.guestStatus === "DROPPED_GUEST").length;
-  const churnRate = members.length > 0 ? Math.round(((atRisk + dropped) / members.length) * 100 * 10) / 10 : 0;
+  const churnRate = members.length > 0 ? pct1(atRisk + dropped, members.length) : 0;
 
   // Repeat attendance rate per event
   const seenBefore = new Set<string>();

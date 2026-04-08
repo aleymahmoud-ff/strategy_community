@@ -11,6 +11,9 @@ interface EventRow {
   absent: number;
   declined: number;
   attendanceRate: number;
+  responseRate: number;
+  reliabilityRate: number;
+  actualAttendanceRate: number;
 }
 
 interface EventComparisonTableProps {
@@ -90,7 +93,9 @@ const COLUMNS: { key: SortColumn; label: string }[] = [
   { key: 'attended', label: 'Attended' },
   { key: 'absent', label: 'Absent' },
   { key: 'declined', label: 'Declined' },
-  { key: 'attendanceRate', label: 'Rate' },
+  { key: 'responseRate', label: 'Response' },
+  { key: 'reliabilityRate', label: 'Reliability' },
+  { key: 'actualAttendanceRate', label: 'Attendance' },
 ];
 
 export default function EventComparisonTable({ data }: EventComparisonTableProps) {
@@ -156,8 +161,8 @@ export default function EventComparisonTable({ data }: EventComparisonTableProps
                 </td>
               </tr>
             ) : (
-              sorted.map((row, i) => (
-                <tr key={i} className="hover:bg-gray-50/60 transition-colors">
+              sorted.map((row) => (
+                <tr key={row.name} className="hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3">
                     <p className="text-sm font-semibold text-[#2d3e50] whitespace-nowrap">
                       {row.name}
@@ -186,7 +191,13 @@ export default function EventComparisonTable({ data }: EventComparisonTableProps
                     <NumBadge value={row.declined} color="red" />
                   </td>
                   <td className="px-4 py-3">
-                    <RateBadge rate={row.attendanceRate} />
+                    <RateBadge rate={row.responseRate} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <RateBadge rate={row.reliabilityRate} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <RateBadge rate={row.actualAttendanceRate} />
                   </td>
                 </tr>
               ))

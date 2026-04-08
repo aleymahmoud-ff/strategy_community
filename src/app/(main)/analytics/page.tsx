@@ -1,4 +1,4 @@
-import { getSummaryStats, getEventAnalytics, getMemberAnalytics, getHealthMetrics } from "@/lib/analytics";
+import { getSummaryStats, getEventAnalytics, getMemberAnalytics, getHealthMetrics, abbreviateEventName } from "@/lib/analytics";
 import SummaryCards from "@/components/analytics/SummaryCards";
 import AnalyticsTabs from "@/components/analytics/AnalyticsTabs";
 import AttendanceLineChart from "@/components/analytics/events/AttendanceLineChart";
@@ -18,6 +18,7 @@ import GrowthAreaChart from "@/components/analytics/health/GrowthAreaChart";
 import RepeatAttendanceChart from "@/components/analytics/health/RepeatAttendanceChart";
 import RetentionCohortHeatmap from "@/components/analytics/health/RetentionCohortHeatmap";
 import AttendanceHeatmap from "@/components/analytics/health/AttendanceHeatmap";
+import ResponseMetricsChart from "@/components/analytics/events/ResponseMetricsChart";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export default async function AnalyticsPage() {
 
   // Prepare event chart data
   const statusBreakdownData = eventData.map((e) => ({
-    name: e.name.replace("Meetup ", "M").replace("Ramadan Gathering ", "R"),
+    name: abbreviateEventName(e.name),
     attended: e.attended,
     absent: e.absent,
     confirmed: e.confirmed,
@@ -48,7 +49,7 @@ export default async function AnalyticsPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-sm font-semibold text-[#2d3e50] mb-4">Attendance Over Time</h3>
           <AttendanceLineChart data={eventData.map((e) => ({
-            name: e.name.replace("Meetup ", "M").replace("Ramadan Gathering ", "R"),
+            name: abbreviateEventName(e.name),
             invited: e.invited,
             confirmed: e.confirmed,
             attended: e.attended,
@@ -60,6 +61,15 @@ export default async function AnalyticsPage() {
           <StatusBreakdownChart data={statusBreakdownData} />
         </div>
       </div>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <h3 className="text-sm font-semibold text-[#2d3e50] mb-4">Response Rate / Reliability / Attendance Rate</h3>
+        <ResponseMetricsChart data={eventData.map((e) => ({
+          name: abbreviateEventName(e.name),
+          responseRate: e.responseRate,
+          reliabilityRate: e.reliabilityRate,
+          actualAttendanceRate: e.actualAttendanceRate,
+        }))} />
+      </div>
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-sm font-semibold text-[#2d3e50] mb-4">No-Show Rate per Event</h3>
@@ -67,7 +77,7 @@ export default async function AnalyticsPage() {
         </div>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-sm font-semibold text-[#2d3e50] mb-4">First-Timers per Event</h3>
-          <FirstTimersChart data={eventData.map((e) => ({ name: e.name.replace("Meetup ", "M").replace("Ramadan Gathering ", "R"), firstTimers: e.firstTimers }))} />
+          <FirstTimersChart data={eventData.map((e) => ({ name: abbreviateEventName(e.name), firstTimers: e.firstTimers }))} />
         </div>
       </div>
       <EventComparisonTable data={eventData} />

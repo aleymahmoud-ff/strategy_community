@@ -88,7 +88,11 @@ model EventAttendee {
   memberId  String
   eventId   String
   seatId    String?
-  status    AttendeeStatus @default(INVITED)
+  status           AttendeeStatus @default(INVITED)
+  invited          Boolean @default(true)
+  calendarResponse Boolean @default(false)
+  confirmed        Boolean?
+  attended         Boolean @default(false)
   whatsapp  Boolean @default(false)
   followUp  Boolean @default(false)
   introCall Boolean @default(false)
